@@ -1,0 +1,39 @@
+enum Role {
+  TENANT
+  LANDLORD
+  ADMIN
+}
+
+enum ActiveStatus {
+  ACTIVE
+  BANNED
+  INACTIVE
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  NOT_AVAILABLE
+}
+
+enum USTATUS {
+  BAN
+  UNBAN
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// hlaoajfa
+enum RequestStatus {
+  PENDING  
+  APPROVED 
+  REJECTED  
+}
+enum SubscriptionStatus{
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
