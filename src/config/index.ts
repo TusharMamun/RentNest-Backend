@@ -11,5 +11,6 @@ export default {
     jwt_refresh_expires_in:process.env.JWT_REFRESH_EXPIRES_IN!,
     app_url:process.env.APP_URL,
     strip_secratet_Key :process.env.STRIPE_SECRET_KEY!,
+node_env: process.env.NODE_ENV || 'development'!,
 
 }

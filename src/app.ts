@@ -10,6 +10,7 @@ import { userAuthRouter } from "./Modules/userAuthentication/user.route";
 import { adminRouter } from "./Modules/Admin/admin.route";
 import { paymnetRoutes } from "./Modules/payment/payment.route";
 import { notFound } from "./Middleware/not-founds";
+import { globalErrorHandler } from "./Middleware/global_error";
 
 
 
@@ -37,6 +38,7 @@ app.use("/api/payment",paymnetRoutes)
 
 
 app.use(notFound)
+app.use(globalErrorHandler)
 export default app;
 
  
