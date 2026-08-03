@@ -5,5 +5,15 @@ export interface RegesterUserPayload{
     email:string,
     password:string,
     role?:Role,
-    profilePhoto?:string
+    profilePhoto?:string,
+    bio?:string
 }
+export interface UpdateUserPayload{
+    name?:string,
+    email?:string,
+    password?:string,
+    role?:Role,
+    profilePhoto?:string,
+    bio?:string
+}
+

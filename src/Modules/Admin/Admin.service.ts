@@ -3,6 +3,10 @@ import { prisma } from "../../lib/prisma";
 import { IPropertyQueryFilters } from "../Landlord_Management/Properties.interface";
 import { IupdateUserPayload } from "./Admin.interface";
 import { Prisma } from "../../../generated/prisma/client";
+
+import httpStatus from "http-status";
+import { AppError } from "../../util/app-erro";
+
 const getAllUser = async (userId: string) => {
 
   const currentUser = await prisma.user.findUnique({
@@ -11,11 +15,11 @@ const getAllUser = async (userId: string) => {
 
 
   if (!currentUser) {
-    throw new Error("User not found!");
+    throw new AppError(httpStatus.NOT_FOUND, "User not found!");
   }
 
   if (currentUser.role !== "ADMIN") {
-    throw new Error("Unauthorized access! Only admins can perform this action.");
+    throw new AppError(httpStatus.FORBIDDEN, "Unauthorized access! Only admins can perform this action.");
   }
 
   
@@ -41,7 +45,7 @@ const updateuserStatusfromDb = async(userId:string,payload:IupdateUserPayload)=>
   });
 
   if (!isExist) {
-    throw new Error("Rental request not found!");
+    throw new AppError(httpStatus.NOT_FOUND, "Rental request not found!");
   }
 
   const result = await prisma.user.update({

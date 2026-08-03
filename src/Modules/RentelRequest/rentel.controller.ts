@@ -7,7 +7,7 @@ import { rentelService } from "./rentel.service";
 const creatRentelRequest = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const tenantId = req.user?.id;
-    console.log(tenantId)
+   
     console.log(req.body)
 
 

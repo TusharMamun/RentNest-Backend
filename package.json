@@ -8,8 +8,10 @@
   "main": "server.js",
   "scripts": {
     "dev": "tsx watch src/Server.ts",
+    "db:seed":"prisma db seed",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "webhook:stripe":"stripe listen --forward-to localhost:5000/webhooks"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

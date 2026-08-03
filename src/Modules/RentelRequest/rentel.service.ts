@@ -1,5 +1,8 @@
 import { prisma } from "../../lib/prisma";
+import { AppError } from "../../util/app-erro";
 import { IRentalRequest } from "./retntel.interface";
+
+import httpStatus from "http-status";
 
 const creatRentelReqService = async (userId: string,payload: IRentalRequest, ) => {
 
@@ -18,7 +21,7 @@ const propertyidget=await prisma.property.findUnique({
     }
 })
 if(!propertyidget){
-throw new Error("can't find property id")
+throw new AppError(httpStatus.NOT_FOUND, "can't find property id")
 }
 
 

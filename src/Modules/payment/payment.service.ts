@@ -2,15 +2,21 @@ import { RequestStatus } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/strip";
+import { AppError } from "../../util/app-erro";
 import { IPayment } from "./payment.interface";
+
+import httpStatus from "http-status";
 
 const creatChakoutsession = async (tenantId: string, payload: IPayment) => {
   const { propertyId, requestId } = payload;
 
   const paymentUrl = await prisma.$transaction(async (tx) => {
-    // ১. Tenant ডাটা নিয়ে আসা
+    // ১. Tenant ডাটা নিয়ে আসা
     const tenantUser = await tx.user.findFirstOrThrow({
       where: {
+
+
+        
         id: tenantId,
       },
       include: {
@@ -33,7 +39,7 @@ const creatChakoutsession = async (tenantId: string, payload: IPayment) => {
     });
 
     if (existRequest.status !== RequestStatus.APPROVED) {
-      throw new Error("Your rental request is not approved yet!");
+      throw new AppError(httpStatus.BAD_REQUEST, "Your rental request is not approved yet!");
     }
 
     // ৪. Stripe Customer ID বের করা / নতুন তৈরি করা
@@ -98,4 +104,4 @@ const creatChakoutsession = async (tenantId: string, payload: IPayment) => {
 
 export const paymentdbservice = {
   creatChakoutsession,
-};
+}

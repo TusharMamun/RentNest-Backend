@@ -4,6 +4,10 @@ import { catchAsync } from "../../util/catchAsync";
 import { sendResponse } from "../../util/sendResponse";
 import { IPropertyQueryFilters } from "../Landlord_Management/Properties.interface";
 import { publicProService } from "./publicPro.service";
+import { AppError } from "../../util/app-erro";
+import { singlePropertyGetZodSchema } from "../Landlord_Management/PropertiesInputValidation";
+
+
 const getAllPropertise = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const query = req.query as unknown as IPropertyQueryFilters;
@@ -35,13 +39,13 @@ const categoryGet = catchAsync(
 );
 const singleProperty = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const propertyId = req.params.id;
+    const {id} = singlePropertyGetZodSchema.parse(req.params);
 
-    if (!propertyId) {
-      throw new Error("Property ID is required!");
+    if (!id) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Property ID is required!");
     }
 
-    const result = await publicProService.getProptertyById(propertyId as string);
+    const result = await publicProService.getProptertyById(id as string     );
 
     sendResponse(res, {
       success: true,

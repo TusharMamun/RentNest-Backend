@@ -1,6 +1,9 @@
 import { RequestStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import { AppError } from "../../util/app-erro";
 import { ICreatePropertyPayload, IUpdatePalyload, IUpdatePalyloadstatus } from "./Properties.interface";
+
+import httpStatus from "http-status";
 
 const creatPropterisDb = async (
   payload: ICreatePropertyPayload,
@@ -12,7 +15,7 @@ const creatPropterisDb = async (
   });
 
   if (!user) {
-    throw new Error("Landlord account not found!");
+    throw new AppError(httpStatus.NOT_FOUND, "Landlord account not found!");
   }
 
   // ২. catagoyName পেলোড থেকে আলাদা করা — Property টেবিলে এই ফিল্ড নেই
@@ -114,7 +117,7 @@ const getProptertyById = async (propertyId: string) => {
   });
 
   if (!result) {
-    throw new Error("Property not found with the provided ID!");
+    throw new AppError(httpStatus.NOT_FOUND, "Property not found with the provided ID!");
   }
 
   return result;
@@ -151,7 +154,7 @@ console.log(id)
   });
 
   if (!isExist) {
-    throw new Error("Rental request not found!");
+    throw new AppError(httpStatus.NOT_FOUND, "Rental request not found!");
   }
 
   const result = await prisma.rentalRequest.update({

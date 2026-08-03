@@ -1,12 +1,13 @@
 import { prisma } from "../../lib/prisma";
-;
 import httpStatus from 'http-status'; // 
 import bcrypt from 'bcrypt';
 import config from "../../config";
-import { RegesterUserPayload } from "./user.interface";
+import { RegesterUserPayload, UpdateUserPayload } from "./user.interface";
+import { AppError } from "../../util/app-erro";
+
 
 const regesterService=async(payload:RegesterUserPayload)=>{
- const { name, email, password,profilePhoto  } = payload;
+ const { name, email, password,profilePhoto,bio  } = payload;
 
     // ১. ইউজার অলরেডি রেজিস্টার্ড কিনা চেক করা
     const isUserExist = await prisma.user.findUnique({
@@ -15,10 +16,10 @@ const regesterService=async(payload:RegesterUserPayload)=>{
 
     // 💡 সমাধান: throw না করে সরাসরি 409 Conflict রেসপন্স রিটার্ন করা
     if (isUserExist) {
-throw new Error("User with This email Already exists")
+throw new AppError(httpStatus.CONFLICT, "User with This email Already exists")
     }
 
-    // ২. পাসওয়ার্ড হ্যাশ করা
+    // ২. পাসওয়ার্ড হ্যাশ করা
     const hashPassword = await bcrypt.hash(password, Number(config.bycript_salt_round));
     
     // ৩. ডাটাবেজে ইউজার তৈরি করা
@@ -32,12 +33,13 @@ throw new Error("User with This email Already exists")
     const profile = await prisma.profile.create({
            data:{
         userId:createdUser.id,
-        profilePhoto
+        profilePhoto,
+        bio
       }
     }
     )
 
-    // ৪. পাসওয়ার্ড ছাড়া ইউজারের ডেটা তুলে আনা
+    // ৪. পাসওয়ার্ড ছাড়া ইউজারের ডেটা তুলে আনা
     const user = await prisma.user.findUnique({
       where: {
         id: createdUser.id,
@@ -68,14 +70,13 @@ const userprofile = await prisma.user.findFirstOrThrow({
 })
 return userprofile
 }
-const upadteUser =async(userId:string,payload:any)=>{
-  const {name,role,activestatus,profilePhoto,bio} = payload;
+const upadteUser =async(userId:string,payload:UpdateUserPayload)=>{
+  const {name,role,profilePhoto,bio} = payload;
   const updateData = await prisma.user.update({
     where:{id:userId},
     data:{
       name,
       role,
-      activestatus,
       profile:{
 update:{
   profilePhoto,bio

@@ -4,13 +4,16 @@ import { catchAsync } from "../../util/catchAsync";
 import { sendResponse } from "../../util/sendResponse"; // আপনার প্রজেক্টের sendResponse Utility
 import { AdminData } from "./Admin.service";
 import { IPropertyQueryFilters } from "../Landlord_Management/Properties.interface";
+import { AppError } from "../../util/app-erro";
+import { singleUserZodSchema, updateuserStatusSchema } from "./AdminDataZodvalidation";
+
 
 const allUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      throw new Error("Unauthorized access! User ID not found.");
+      throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized access! User ID not found.");
     }
 
 
@@ -26,12 +29,12 @@ const allUser = catchAsync(
 );
 const updateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    // 💡 req.params থেকে id ডিস্ট্রাকচার করে নেওয়া হলো
-    const { id } = req.params; 
-    const payloadData = req.body;
+    // 💡 req.params থেকে id ডিস্ট্রাকচার করে নেওয়া হলো
+    const { id } =singleUserZodSchema.parse( req.params); 
+    const payloadData = updateuserStatusSchema.parse(req.body);
 
     if (!id) {
-      throw new Error("User ID is required!");
+      throw new AppError(httpStatus.BAD_REQUEST, "User ID is required!");
     }
 
     const result = await AdminData.updateuserStatusfromDb(id as string, payloadData);
@@ -75,4 +78,6 @@ const getAllRentelRequest = catchAsync(
 
 export const adminController = {
   allUser,updateUser,getAllPropertise,getAllRentelRequest
-};
+}
+
+;

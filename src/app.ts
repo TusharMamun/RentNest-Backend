@@ -1,6 +1,6 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { Application } from "express";
+import express, { application, Application } from "express";
 import config from "./config";
 import { authRouter } from "./Modules/Auth/auth.routes";
 import { propertiesRout } from "./Modules/Landlord_Management/properties.route";
@@ -17,6 +17,13 @@ import { globalErrorHandler } from "./Middleware/global_error";
 const app: Application = express();
 
 // Middleware — order matters: CORS first, then body parsers
+
+app.post(
+  "/payments/webhook",
+  express.raw({ type: "application/json" })
+
+);
+
 app.use(cors({
     origin: config.app_url,
     credentials: true

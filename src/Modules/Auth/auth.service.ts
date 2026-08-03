@@ -6,6 +6,9 @@ import bcrypt from 'bcrypt';
 import  Jwt, { JwtPayload, SignOptions }   from "jsonwebtoken";
 import { jwtUtils } from "../../util/jwt";
 
+import httpStatus from "http-status";
+import { AppError } from "../../util/app-erro";
+
 const loginguser=async(payload:ILogingUser)=>{
 const {email,password} = payload
 const user =await prisma.user.findUniqueOrThrow({
@@ -15,16 +18,16 @@ const user =await prisma.user.findUniqueOrThrow({
 )
 console.log(user)
 if(!user){
-    throw new Error("User not found. Please log in Again.")
+    throw new AppError(httpStatus.NOT_FOUND, "User not found. Please log in Again.");
 }
 if (user.isAvailable !==ActiveStatus.ACTIVE) {
-  throw new Error("Your account is not active. Please contact support.");
+  throw new AppError(httpStatus.FORBIDDEN, "Your account is not active. Please contact support.");
 }
 console.log(user.isAvailable)
 
 const isPasswordMetched = await bcrypt.compare(password,user.password);
 if(!isPasswordMetched){
-    throw new Error("password is incorrect")
+    throw new AppError(httpStatus.UNAUTHORIZED, "password is incorrect");
 }
 const jwtPayload = {
         id:user.id,
@@ -51,7 +54,7 @@ return {
 const refreshToken=async(refreshToken:string)=>{
 const verfyedRefreshToken = jwtUtils.veryfyedToken(refreshToken,config.jwt_refresh_secret)
 if(!verfyedRefreshToken.success){
-   throw Error(verfyedRefreshToken.error) 
+   throw new AppError(httpStatus.UNAUTHORIZED, verfyedRefreshToken.error || "Invalid or expired refresh token."); 
 }
 const {id}=verfyedRefreshToken.data as JwtPayload
 const user=await prisma.user.findUnique({
@@ -60,12 +63,12 @@ const user=await prisma.user.findUnique({
     }
 })
 if(!user){
-    throw new Error("User not found. Please log in Again.")
+    throw new AppError(httpStatus.NOT_FOUND, "User not found. Please log in Again.");
 }
 if (user.isAvailable !==ActiveStatus.ACTIVE) {
-  throw new Error("Your account is not active. Please contact support.");
+  throw new AppError(httpStatus.FORBIDDEN, "Your account is not active. Please contact support.");
 }
-const jwtPayload={                             
+const jwtPayload={                         
     id,
     name:user.name,
     email:user.email,

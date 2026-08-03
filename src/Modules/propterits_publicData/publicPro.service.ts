@@ -1,6 +1,9 @@
 import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import { AppError } from "../../util/app-erro";
 import { IPropertyQueryFilters } from "../Landlord_Management/Properties.interface";
+
+import httpStatus from "http-status";
 
 const getAllPropertisFromDb = async (query: IPropertyQueryFilters) => {
   const { searchTerm, location, catagoyName, minPrice, maxPrice, amenities } = query;
@@ -95,7 +98,7 @@ const getProptertyById = async (propertyId: string) => {
   });
 
   if (!result) {
-    throw new Error("Property not found with the provided ID!");
+    throw new AppError(httpStatus.NOT_FOUND, "Property not found with the provided ID!");
   }
 
   return result;

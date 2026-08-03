@@ -6,8 +6,9 @@ import { sendResponse } from "../../util/sendResponse";
 import httpStatus from 'http-status';
 import config from "../../config";
 import { jwtUtils } from "../../util/jwt";
+import { LoginInfoSchema } from "./AuthZodValidation";
 const loginUser = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
-const payload =req.body
+const payload =LoginInfoSchema.parse(req.body)
 const {accessToken,refreshToken} = await authService.loginguser(payload)
 
 res.cookie(

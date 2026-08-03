@@ -4,10 +4,11 @@ import httpStatus from 'http-status';
 import { userAuthService } from "./user.service";
 import { catchAsync } from "../../util/catchAsync";
 import { sendResponse } from "../../util/sendResponse";
+import { creatUserSchema, updateUserSchema } from "./userInputzodvalidation";
 
 
 const userRegesterController=catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
-    const payload = req.body
+    const payload = creatUserSchema.parse(req.body)
    const user = await userAuthService.regesterService(payload)
 
 
@@ -30,7 +31,7 @@ sendResponse(res,{
 })
 const userUpdateUser=catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
   const userId = req.user?.id as string
-  const payload = req.body
+  const payload =updateUserSchema.parse(req.body)
   const result =await userAuthService.upadteUser(userId,payload)
   sendResponse(res,{
     success:true,

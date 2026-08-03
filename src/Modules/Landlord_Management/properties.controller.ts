@@ -4,6 +4,9 @@ import { catchAsync } from "../../util/catchAsync";
 import { sendResponse } from "../../util/sendResponse";
 import { propertisService } from "./proterties.service";
 import { prisma } from "../../lib/prisma";
+import { AppError } from "../../util/app-erro";
+import { createPropertyZodSchema, singlePropertyGetZodSchema, updateStausSchema } from "./PropertiesInputValidation";
+
 
 const createProperty = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -11,11 +14,11 @@ const createProperty = catchAsync(
     const userId = req.user?.id;
 
     if (!userId) {
-      throw new Error("Unauthorized! User ID is missing.");
+      throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized! User ID is missing.");
     }
 
     // ২. সার্ভিস ডেকে প্রোপার্টি তৈরি করা
-    const payload = req.body;
+    const payload =createPropertyZodSchema.parse( req.body)
     const result = await propertisService.creatPropterisDb(payload, userId);
 
     // ৩. রেসপন্স সেন্ড করা
@@ -40,13 +43,13 @@ sendResponse(res,{
 );
 const singleProperty = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const propertyId = req.params.id;
+    const {id} =singlePropertyGetZodSchema.parse(req.params)
 
-    if (!propertyId) {
-      throw new Error("Property ID is required!");
+    if (!id) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Property ID is required!");
     }
 
-    const result = await propertisService.getProptertyById(propertyId as string);
+    const result = await propertisService.getProptertyById(id as string);
 
     sendResponse(res, {
       success: true,
@@ -61,16 +64,16 @@ const updatePropetis = catchAsync(
     const authorId = req.user?.id;
     // 👈 রুল চেক: role === 'ADMIN' হতে হবে
   
-    const propertyId = req.params.id;
+   const {id} =singlePropertyGetZodSchema.parse(req.params)
     const payload = req.body;
 
-    if (!propertyId) {
-      throw new Error("Property ID is required!");
+    if (!id) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Property ID is required!");
     }
 
 
     const result = await propertisService.updatedPropetisDb(
-      propertyId as string,
+      id as string,
       payload,
   
     );
@@ -86,15 +89,15 @@ const updatePropetis = catchAsync(
 const deletedPropertis = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
 
-    const propertyId = req.params.id;
+  const {id} =singlePropertyGetZodSchema.parse(req.params)
 
-    if (!propertyId) {
-      throw new Error("Property ID is required!");
+    if (!id) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Property ID is required!");
     }
 
 
     const result = await propertisService.deletedPropertisfromDb(
-      propertyId as string,
+      id as string,
    
     );
 
@@ -136,8 +139,8 @@ const result = await propertisService.getAllRentelReqService()
 
 const updateStatus = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-    const payload = req.body; 
+   const {id} =singlePropertyGetZodSchema.parse(req.params)
+    const payload =updateStausSchema.parse(req.body); 
 
     const result = await propertisService.updateStatusInDb(id as string, payload);
 
