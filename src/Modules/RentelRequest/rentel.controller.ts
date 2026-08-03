@@ -3,17 +3,21 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../util/catchAsync";
 import { sendResponse } from "../../util/sendResponse";
 import { rentelService } from "./rentel.service";
+import { createPropertyRequestInputValidation } from "./rentelRequestInputzodValidation";
+import { singleUserZodSchema } from "../Admin/AdminDataZodvalidation";
 
 const creatRentelRequest = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const tenantId = req.user?.id;
    
-    console.log(req.body)
+const payload = createPropertyRequestInputValidation.parse(req.body)
+
+
 
 
     const result = await rentelService.creatRentelReqService(
       tenantId as string,
-      req.body
+  payload
     );
 
     sendResponse(res, {
@@ -42,7 +46,7 @@ const getMyRentelRequest = catchAsync(
 const getsingleData = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
 
-    const { id } = req.params;
+    const { id } =singleUserZodSchema.parse( req.params);
 
     const result = await rentelService.getsingle(id as string);
 
