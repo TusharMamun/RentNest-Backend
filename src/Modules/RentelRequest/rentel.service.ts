@@ -37,6 +37,29 @@ if (propertyidget.landlordId === userId) {
     "You cannot rent your own property!"
   );
 }
+const overlapping = await prisma.rentalRequest.findFirst({
+  where: {
+    propertyId: propertyidget.id,
+    status: {
+      not: "REJECTED",
+    },
+    // Existing booking starts BEFORE the new request ends
+    startDate: {
+      lt: payload.endDate,
+    },
+    // Existing booking ends AFTER the new request starts
+    endDate: {
+      gt: payload.startDate,
+    },
+  },
+});
+
+if (overlapping) {
+  throw new AppError(
+    httpStatus.BAD_REQUEST,
+    "Property is already booked for these selected dates!"
+  );
+}
 
   const result = await prisma.rentalRequest.create({
     data: {
@@ -44,6 +67,7 @@ if (propertyidget.landlordId === userId) {
       endDate: payload.endDate,
       tenantId: userId,
       propertyId: payload.propertyId,
+    totalPrice:propertyidget.pricePerMonth
     },
     include: {
       tenant: {

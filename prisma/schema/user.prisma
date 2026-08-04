@@ -13,11 +13,14 @@ model User {
   reviews        Review[]        @relation("TenantReviews")
   catagory       Category[]
   profile        Profile?
-
+  subscriptions Subscription[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  subscriptions Subscription?
+
   @@map("user")
  
+
+
+
 
 }
