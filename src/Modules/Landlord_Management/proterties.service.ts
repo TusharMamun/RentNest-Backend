@@ -9,7 +9,7 @@ const creatPropterisDb = async (
   payload: ICreatePropertyPayload,
   userId: string
 ) => {
-  // ১. ইউজার ডাটাবেজে বিদ্যমান কি না তা চেক করা
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -18,7 +18,7 @@ const creatPropterisDb = async (
     throw new AppError(httpStatus.NOT_FOUND, "Landlord account not found!");
   }
 
-  // ২. catagoyName পেলোড থেকে আলাদা করা — Property টেবিলে এই ফিল্ড নেই
+
   const { catagoyName, ...propertyFields } = payload;
 
   // ৩. categoryId রিজল্ভ করা — catagoyName দিলে সেই ক্যাটাগরি খোঁজা বা তৈরি করা
@@ -67,8 +67,7 @@ const getAllPropertisFromDb = async () => {
       catagory: true,
     },
   });
-  console.log(result)
-  console.log("hwllow")
+ 
   return result;
 };
 const updatedPropetisDb = async (propertiesId: string, payload: IUpdatePalyload) => {

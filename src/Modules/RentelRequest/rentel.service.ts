@@ -1,3 +1,4 @@
+import { AvailabilityStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../util/app-erro";
 import { IRentalRequest } from "./retntel.interface";
@@ -6,7 +7,7 @@ import httpStatus from "http-status";
 
 const creatRentelReqService = async (userId: string,payload: IRentalRequest, ) => {
 
-console.log(payload)
+
   await prisma.user.findUniqueOrThrow({
     where: { id: userId },
   });
@@ -24,6 +25,18 @@ if(!propertyidget){
 throw new AppError(httpStatus.NOT_FOUND, "can't find property id")
 }
 
+if (propertyidget.isAvailable !== AvailabilityStatus.AVAILABLE) {
+  throw new AppError(
+    httpStatus.BAD_REQUEST,
+    "Property is not available for rental request!"
+  );
+}
+if (propertyidget.landlordId === userId) {
+  throw new AppError(
+    httpStatus.FORBIDDEN, 
+    "You cannot rent your own property!"
+  );
+}
 
   const result = await prisma.rentalRequest.create({
     data: {
