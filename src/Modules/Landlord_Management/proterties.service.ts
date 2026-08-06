@@ -65,7 +65,10 @@ const getAllPropertisFromDb = async () => {
         },
       },
       catagory: true,
+      rentalRequests:true,
+      reviews:true
     },
+
   });
  
   return result;
@@ -112,6 +115,7 @@ const getProptertyById = async (propertyId: string) => {
         },
       },
       catagory: true,
+      reviews:true
     },
   });
 
@@ -138,6 +142,7 @@ const getAllRentelReqService = async () => {
         omit: { password: true },
       },
       property: true,
+      
     },
     orderBy: { createdAt: "desc" },
   });

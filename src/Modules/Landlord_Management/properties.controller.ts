@@ -17,11 +17,11 @@ const createProperty = catchAsync(
       throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized! User ID is missing.");
     }
 
-    // ২. সার্ভিস ডেকে প্রোপার্টি তৈরি করা
+  
     const payload =createPropertyZodSchema.parse( req.body)
     const result = await propertisService.creatPropterisDb(payload, userId);
 
-    // ৩. রেসপন্স সেন্ড করা
+
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.CREATED,

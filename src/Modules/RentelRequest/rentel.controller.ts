@@ -8,7 +8,7 @@ import { singleUserZodSchema } from "../Admin/AdminDataZodvalidation";
 
 const creatRentelRequest = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const tenantId = req.user?.id;
+const tenantId = req.user?.id;
    
 const payload = createPropertyRequestInputValidation.parse(req.body)
 

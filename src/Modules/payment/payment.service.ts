@@ -1,177 +1,152 @@
-import { id } from "zod/locales";
-import { AvailabilityStatus, PaymentStatus, RequestStatus } from "../../../generated/prisma/enums";
-import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/strip";
 import { AppError } from "../../util/app-erro";
 import { IPayment } from "./payment.interface";
 import httpStatus from "http-status";
+export  const creatCheckoutSession = async(payload:IPayment ,renterId:string)=>{
+const { requestId} =payload
+// const rentelData = prisma.rentalRequest.findUnique({
+//   where:{
+//     id:requestId
+//   },include:{
+// subscriptions:true,
+// property:true
+//   }
+// })
+const rentelData = await prisma.rentalRequest.findUnique({
+  where:{
+    id:requestId
+  },include:{
+    property:true,
+    subscriptions:true,
 
-const creatChakoutsession = async (tenantId: string, payload: IPayment) => {
-  const { propertyId, requestId } = payload;
+  }
+})
+if (!rentelData) {
+  throw new AppError(httpStatus.NOT_FOUND, "Rental record not found!");
+}
 
-  const paymentUrl = await prisma.$transaction(async (tx) => {
-    // ১. Tenant ডাটা নিয়ে আসা
-    const tenantUser = await tx.user.findFirstOrThrow({
-      where: {
-        id: tenantId,
-      },
-      include: {
-        subscriptions: true,
-      },
-    });
+if (rentelData.tenantId !== renterId) {
+  throw new AppError(httpStatus.FORBIDDEN, "You are not authorized to pay for this rental!");
+}
 
-    // ২. Property ডাটা চেক করা
-    const existProperty = await tx.property.findFirstOrThrow({
-      where: {
-        id: propertyId,
-      },
-    });
+// if (rentelData.status !== "PENDING") {
+//   throw new AppError(httpStatus.BAD_REQUEST, "Payment can only be processed for pending rentals!");
+// }
 
-    // ৩. Rental Request ডাটা ও Status চেক করা
-    const existRequest = await tx.rentalRequest.findFirstOrThrow({
-      where: {
-        id: requestId,
-      },
-      include: {
-        property: true,
-        subscriptions: true,
-      },
-    });
-
-    // ল্যান্ডলর্ড যেন নিজের প্রপার্টিতে পেমেন্ট না করতে পারে
-    if (tenantId === existProperty.landlordId) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "You cannot make or process a rental request for your own property!"
-      );
+if (rentelData.subscriptions?.status === "COMPLETED") {
+  throw new AppError(httpStatus.BAD_REQUEST, "You have already paid for this rental!");
+}
+const session =await stripe.checkout.sessions.create({
+  mode:"payment",
+  metadata:{rentelId:rentelData.id},
+success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `http://localhost:3000/cancel`,
+  line_items:[{
+    quantity:1,
+    price_data:{
+      currency:"USD",
+      unit_amount:Math.round(rentelData.totalPrice * 100),
+      product_data:{
+        name:rentelData.property.title
+      }
     }
+  }]
+})
+await prisma.subscription.upsert({
+  where: {
+    rentRequestid: rentelData.id, 
+  },
+  create: {
+    rentRequestid: rentelData.id,
+    tenantId: rentelData.tenantId, 
+    totalAmount: rentelData.totalPrice,
+    trasectionId: session.id,
+   
+  },
+  update: {
+    totalAmount: rentelData.totalPrice,
+    trasectionId: session.id,
+  status:"PENDING"
+  },
+});
+return{checkOutUrl:session.url}
+}
 
-    // রিকোয়েস্ট Approved না হলে পেমেন্ট করা যাবে না
-    if (existRequest.status !== RequestStatus.APPROVED) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Your rental request is not approved yet!"
-      );
+export  const complitPayment=async( rentRequestid:string,trasectionId:string  )=>{
+  const payment =await prisma.subscription.findUnique({
+    where:{
+      rentRequestid:rentRequestid
     }
-
-    // ইতোমধ্যে পেমেন্ট সম্পন্ন হলে আটকাবে
-    if (existRequest.subscriptions?.status === PaymentStatus.COMPLETED) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Payment has already been completed for this rental request!"
-      );
+  })
+  const notavailableProperystatus = await prisma.rentalRequest.findUnique({
+    where:{
+      id:rentRequestid
     }
-
-    // ৪. Stripe Customer ID বের করা / নতুন তৈরি করা
-    let stripcustomerId = tenantUser.subscriptions?.[0]?.stripeCustomerId;
-
-    if (!stripcustomerId) {
-      const customer = await stripe.customers.create({
-        email: tenantUser.email,
-        name: tenantUser.name,
-        metadata: {
-          userid: tenantUser.id,
-        },
-      });
-
-      stripcustomerId = customer.id;
+  })
+  const propertyid = notavailableProperystatus?.propertyId
+  if(!payment || payment.status ==="COMPLETED")return
+await prisma.$transaction([
+  prisma.subscription.update({
+ where:{
+      rentRequestid:rentRequestid
+    },data:{status:"COMPLETED" ,trasectionId}
+  }),
+  prisma.rentalRequest.update({
+    where:{id:rentRequestid},
+    data:{
+      status:"CONFIRMED"
     }
+  }),
+  prisma.property.update({
+    where:{
+      id:propertyid
+    },
+    data:{
+      isAvailable:"NOT_AVAILABLE"
+    }
+  })
+])
 
-    // ৫. Stripe Checkout Session তৈরি করা
-    const paymentAmount = existRequest.totalPrice;
 
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: existProperty.title || "Rental Property Payment",
-              description: existProperty.description || undefined,
-            },
-            unit_amount: Math.round(Number(paymentAmount) * 100),
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      customer: stripcustomerId,
-      payment_method_types: ["card"],
-      success_url: `${config.app_url}/succespayment?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${config.app_url}/paymentpage?success=false`,
-      metadata: {
-        userId: tenantUser.id,
-        propertyId: existProperty.id,
-        requestId: existRequest.id,
-      },
-    });
+}
 
-    
-    await tx.subscription.upsert({
-      where: {
-        rentRequestid: existRequest.id,
-      },
-    
-      create: {
-        tenantId: tenantUser.id,
-        rentRequestid: existRequest.id,
-        totalAmount: existRequest.totalPrice,
-        stripeCustomerId: stripcustomerId,
-      },
-        update: {
-        totalAmount: existRequest.totalPrice,
-        stripeCustomerId: stripcustomerId,
-        tenantId: tenantUser.id,
-        trasectionId:session.id
-      },
-    });
 
-    return session.url;
+const getAllPaymentService = async () => {
+  const result = await prisma.subscription.findMany({
+    include:{
+      tenant:true
+    },
+    orderBy: {
+      createdAt: "desc",
+    }
   });
 
-  return {
-    paymentUrl,
-  };
+  return result;
 };
-const complitePayment =async(rentRequestid:string,transectionId:string)=>{
-const findrentelId = await prisma.rentalRequest.findUniqueOrThrow({
-  where:{
-    id:rentRequestid
+
+const getSinglePaymentFromDB = async (id: string) => {
+  const result = await prisma.subscription.findUnique({
+    where: { id },
+    include: {
+   tenant: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, "Payment record not found!");
   }
-})
-const properyid = findrentelId.propertyId
- await prisma.property.update({
-  where:{
-    id:properyid
-  },
-    data: {
-          isAvailable: AvailabilityStatus.NOT_AVAILABLE, 
-        },
-})
+
+  return result;
+};
 
 
-const payment = await prisma.subscription.findUnique({
-  where:{
-    id:rentRequestid
-  }
-})
-
-
-
-if(payment?.status ===PaymentStatus.COMPLETED) return
-
-
-     await prisma.subscription.update({
-        where: {
-        id:transectionId
-        },
-        data: {
-          status: PaymentStatus.COMPLETED, 
-        },
-      });
+export const paymentServices={
+  getAllPaymentService,getSinglePaymentFromDB
 }
-export const paymentdbservice = {
-  creatChakoutsession,
-  complitePayment
-};
