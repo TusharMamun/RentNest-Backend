@@ -2,31 +2,36 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../util/app-erro";
 import httpStatus from "http-status";
 import { createReviewInput } from "./review.inputzodvalidation";
+import { ICreateReviewInput } from "./review.interface";
 
 export const creatReviewDb = async (
-  payload: createReviewInput,
+  payload: ICreateReviewInput,
   tenantId: string
 ) => {
-  const { id, rating, comment } = payload;
+  const { rentelid, rating, comment } = payload;
 
   const rentdata = await prisma.rentalRequest.findUnique({
     where: {
-      id: id,
+      id: rentelid,
     },
+    include:{
+      tenant:true
+    }
   });
+
 
   if (!rentdata) {
     throw new AppError(httpStatus.NOT_FOUND, "Rental request not found!");
   }
 
-  if (rentdata.status !== "CONFIRMED") {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "You can only leave a review for confirmed rentals!"
-    );
-  }
+  // if (rentdata.status !== "CONFIRMED") {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     "You can only leave a review for confirmed rentals!"
+  //   );
+  // }
 
-  if (rentdata.tenantId !== tenantId) {
+  if (rentdata.tenant.id !== tenantId) {
     throw new AppError(
       httpStatus.FORBIDDEN,
       "You are not authorized to review this property!"
@@ -38,9 +43,9 @@ export const creatReviewDb = async (
     data: {
       rating,
       comment,
-      rentalRequestId: id,
+      rentelRequestId: rentelid,
       tenantId: tenantId,
-      propertyId: rentdata.propertyId, // রেন্টাল রিকোয়েস্ট থেকে propertyId পাওয়া যাবে
+      propertyId: rentdata.propertyId, 
     },
     include: {
       tenant: {

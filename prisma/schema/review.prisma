@@ -4,11 +4,11 @@ model Review {
   comment    String? @db.Text
   tenantId   String
   propertyId String
-
+ rentelRequestId String
   // Relations
   tenant   User     @relation("TenantReviews", fields: [tenantId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
+ rentel RentalRequest @relation(fields: [rentelRequestId],references: [id],onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

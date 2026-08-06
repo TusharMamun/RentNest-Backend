@@ -8,13 +8,13 @@ import { updateReviewValidationSchema } from "./review.inputzodvalidation";
 
 export const creatReview = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // 1. Validate request body using CREATE schema
-  const validatedData =updateReviewValidationSchema.parse(req.body)
+  // const validatedData =updateReviewValidationSchema.parse(req.body)
   
 
   const tenantId = req.user?.id;
 
 
-const result =await creatReviewDb(validatedData,tenantId as string)
+const result =await creatReviewDb(req.body,tenantId as string)
   // 4. Send response
   sendResponse(res, {
     success: true,
