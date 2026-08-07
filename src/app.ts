@@ -22,7 +22,7 @@ import { webhook } from "./Modules/payment/payment.controller";
 
 const app: Application = express();
 app.post(
-  "/webhooks", // 👈 Stripe CLI-এর সাথে মিলিয়ে এখানে "s" সহ /webhooks দিতে পারেন
+  "/payments/webhooks", // 👈 Stripe CLI-এর সাথে মিলিয়ে এখানে "s" সহ /webhooks দিতে পারেন
   express.raw({ type: "application/json" }),
   webhook
 );
@@ -39,7 +39,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+app.get("/",(req,res)=>{
+  res.send("RentNext server is Runnig")
+})
 // Auth user Api Route
 // app.post("/api/auth/register", );
 app.use("/api/auth",userAuthRouter)

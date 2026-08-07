@@ -25,7 +25,7 @@ export const webhook = catchAsync(
 }
 
     const webhookSecret = config.webhook_secret!
-    console.log(webhookSecret)
+
 if (!webhookSecret) {
   throw new AppError(
     httpStatus.INTERNAL_SERVER_ERROR,

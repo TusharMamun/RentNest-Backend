@@ -6,7 +6,7 @@ import { prisma } from "../src/lib/prisma";
 
 
 async function main() {
-  console.log("🌱 Seeding database...");
+
 
   // পাসওয়ার্ড হ্যাশ করে নেওয়া
   const commonPassword = await bcrypt.hash("12345678", 10);
@@ -204,14 +204,7 @@ const [category1, category2, category3, category4, category5] =
       }),
     ]);
 
-console.log("✅ Categories Seeded Successfully!");
-  console.log({
-    category1,
-    category2,
-    category3,
-    category4,
-    category5,
-  });
+;
 
     const [property1, property2, property3, property4] = await Promise.all([
     prisma.property.create({
@@ -271,7 +264,7 @@ console.log("✅ Categories Seeded Successfully!");
     }),
   ]);
 
-console.log({ property1, property2, property3, property4 });
+
 const [rentalRequest1, rentalRequest2, rentalRequest3] = await Promise.all([
   // Request 1: Pending Status (1 Month)
   prisma.rentalRequest.create({
@@ -309,7 +302,7 @@ const [rentalRequest1, rentalRequest2, rentalRequest3] = await Promise.all([
     },
   }),
 ]);
-console.log({ rentalRequest1, rentalRequest2, rentalRequest3 });
+
 const [review1, review2] = await Promise.all([
     prisma.review.create({
       data: {
@@ -333,23 +326,14 @@ const [review1, review2] = await Promise.all([
   ]);
 
 
-console.log({ review1, review2 });
-  console.log("✅ Seeding completed successfully!");
-  console.log({
-    admin1,
-    landlord1,
-    landlord2,
-    landlord3,
-    tenant1,
-    tenant2,
-    tenant3,
-    tenant4,
-  });
+
+
+
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seeding error:", e);
+
     process.exit(1);
   })
   .finally(async () => {

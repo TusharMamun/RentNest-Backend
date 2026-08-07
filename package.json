@@ -8,8 +8,11 @@
   "main": "server.js",
   "scripts": {
     "dev": "tsx watch src/Server.ts",
+    "build": "prisma generate && tsup",
+    "deploy": "npm run build && vercel --prod",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "build": "tsc",
     "start": "node dist/server.js",
     "webhook:stripe": "stripe listen --forward-to localhost:5000/payments/webhook"
   },

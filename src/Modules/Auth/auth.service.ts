@@ -16,14 +16,14 @@ const user =await prisma.user.findUniqueOrThrow({
 
 }
 )
-console.log(user)
+
 if(!user){
     throw new AppError(httpStatus.NOT_FOUND, "User not found. Please log in Again.");
 }
 if (user.isAvailable !==ActiveStatus.ACTIVE) {
   throw new AppError(httpStatus.FORBIDDEN, "Your account is not active. Please contact support.");
 }
-console.log(user.isAvailable)
+
 
 const isPasswordMetched = await bcrypt.compare(password,user.password);
 if(!isPasswordMetched){

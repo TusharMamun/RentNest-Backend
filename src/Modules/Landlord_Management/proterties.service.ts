@@ -152,7 +152,7 @@ const updateStatusInDb = async (
   id: string, 
   payload: IUpdatePalyloadstatus
 ) => {
-console.log(id)
+
   const isExist = await prisma.rentalRequest.findUnique({
     where: { id },
   });
