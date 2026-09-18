@@ -21,7 +21,9 @@ const getAllPropertisFromDb = async (query: IPropertyQueryFilters) => {
     });
   }
 
-  // 📍 ২. Location
+andConditions.push({
+    isAvailable: "AVAILABLE",
+  });
   if (location) {
     andConditions.push({
       location: { contains: location, mode: "insensitive" },

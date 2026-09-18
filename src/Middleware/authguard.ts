@@ -32,7 +32,7 @@ export const auth = (...requiredRole: Role[]) => {
         ? authHeader.split(" ")[1]
         : authHeader;
 
-    // 1. Missing Token
+
     if (!token) {
       throw new AppError(
         httpStatus.UNAUTHORIZED, // 401
