@@ -4,6 +4,7 @@ model Property {
   description   String             @db.Text
   location      String             @db.VarChar(255)
   pricePerMonth Float
+  image         String              @db.Text 
   amenities     String[]
   isAvailable   AvailabilityStatus @default(AVAILABLE)
   categoryId    String?

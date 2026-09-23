@@ -48,6 +48,7 @@ const creatPropterisDb = async (
   const result = await prisma.property.create({
     data: {
       ...propertyFields,
+      image: propertyFields.image ?? "",
       landlordId: userId,
       ...(categoryId && { categoryId }),
     },

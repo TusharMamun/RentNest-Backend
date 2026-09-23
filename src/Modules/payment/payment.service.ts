@@ -40,8 +40,8 @@ if (rentelData.subscriptions?.status === "COMPLETED") {
 const session =await stripe.checkout.sessions.create({
   mode:"payment",
   metadata:{rentelId:rentelData.id},
-success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `http://localhost:3000/cancel`,
+success_url: `${process.env.APP_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/cancel`,
   line_items:[{
     quantity:1,
     price_data:{

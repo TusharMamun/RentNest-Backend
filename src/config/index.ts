@@ -11,7 +11,7 @@ export default {
     jwt_refresh_expires_in:process.env.JWT_REFRESH_EXPIRES_IN!,
     app_url:process.env.APP_URL,
     strip_secratet_Key :process.env.STRIPE_SECRET_KEY!,
-node_env: process.env.NODE_ENV || 'development'!,
-webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
-
+    node_env: process.env.NODE_ENV || 'development',
+    webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+    frontend_url: process.env.APP_URL || 'http://localhost:3000',
 }

@@ -9,6 +9,8 @@ export const createPropertyZodSchema = z.object({
     pricePerMonth: z
       .number("pricePerMonth is required")
       .positive("pricePerMonth must be positive"),
+      
+    image: z.string().min(1, "Image  is required"),
     amenities: z
       .array(z.string())
       .min(1, "at least one amenity is required"),

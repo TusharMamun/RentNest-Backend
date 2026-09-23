@@ -5,6 +5,7 @@ export interface ICreatePropertyPayload {
   description: string;
   location: string;
   pricePerMonth: number;
+  image?:string;
   amenities: string[];
   isAvailable?: AvailabilityStatus;
   catagoyName?: string;
